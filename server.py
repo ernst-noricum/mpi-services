@@ -1,38 +1,20 @@
 import json
 import uvicorn
 
-from typing import List
-
-from pydantic import BaseModel
 from fastapi import FastAPI
+from fastapi_healthcheck import HealthCheckFactory, healthCheckRoute
 
 from dnachisel import *
 from dnachisel.biotools import reverse_translate
 
+from model import CodonOptimizeRequest, CodonOptimizeResponse
+
+
 app = FastAPI()
 
-#
-# DATA MODEL
-#
-
-
-class Sequence(BaseModel):
-    name: str
-    type: str
-    seq: str
-
-
-class CodonOptimizeRequest(BaseModel):
-    sequences: List[Sequence]
-
-
-class CodonOptimizedSequence(BaseModel):
-    original: Sequence
-    codon_optimized: Sequence
-
-
-class CodonOptimizeResponse(BaseModel):
-    sequences: List[CodonOptimizedSequence]
+# Add Health Checks
+_healthChecks = HealthCheckFactory()
+app.add_api_route('/health', endpoint=healthCheckRoute(factory=_healthChecks))
 
 
 @app.get("/")
@@ -41,7 +23,7 @@ def get_root():
 
 
 @app.post("/codon_optimize", response_model=CodonOptimizeResponse)
-def codon_optimize(request: CodonOptimizeRequest):
+async def codon_optimize(request: CodonOptimizeRequest):
 
     codon_optimized_seqs = list()
 

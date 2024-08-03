@@ -1,4 +1,6 @@
 fastapi
+fastapi-healthcheck
+
 requests
 dnachisel
 uvicorn
